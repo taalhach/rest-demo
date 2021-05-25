@@ -3,7 +3,6 @@ package rest
 import (
 	"compress/gzip"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/taalhach/rest-demo/internal/rest/common"
 	"github.com/taalhach/rest-demo/internal/rest/handlers"
 	"github.com/taalhach/rest-demo/internal/rest/models"
-	"github.com/taalhach/rest-demo/pkg/forms"
 )
 
 const port = 8081
@@ -34,31 +32,10 @@ var serveApiCmd = &cobra.Command{
 
 		e := echo.New()
 
-		e.HTTPErrorHandler = func(err error, c echo.Context) {
-			respCode := 500
-			resp := forms.BasicResponse{}
-			resp.Success = false
-			resp.Message = ""
+		// error handler
+		e.HTTPErrorHandler = CustomErrorHandler
 
-			if err == echo.ErrUnauthorized {
-				respCode = http.StatusUnauthorized
-			}
-
-			if !c.Response().Committed {
-
-				if c.Request().Method == http.MethodHead {
-					err = c.NoContent(respCode)
-				} else {
-					resp.Message = err.Error()
-					err = c.JSON(respCode, resp)
-				}
-				if err != nil {
-					c.Logger().Error(err)
-				}
-			}
-
-		}
-
+		// log request uri, status etc.
 		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 			Format: fmt.Sprintf("method=${method} uri=${uri} status=${status} time=${latency_human}\n"),
 		}))
@@ -73,6 +50,8 @@ var serveApiCmd = &cobra.Command{
 		e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 			Level: 5,
 		}))
+
+		// middleware that attaches custom context
 		e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				cc := &common.CustomContext{
@@ -99,6 +78,8 @@ var serveApiCmd = &cobra.Command{
 				return h(cc)
 			}
 		})
+
+		// jwt authentication
 		e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 
 			SigningKey: []byte(MainConfigs.SecretKey),

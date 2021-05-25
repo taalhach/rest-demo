@@ -141,6 +141,7 @@ var serveApiCmd = &cobra.Command{
 		e.POST("/login", handlers.Login)
 		e.POST("/register", handlers.Register)
 		e.GET("/users", handlers.UsersList, AdminMiddleWare)
+		e.GET("/users/:user-id", handlers.UsersDetails, AdminMiddleWare)
 
 		e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 	},

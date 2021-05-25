@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/taalhach/rest-demo/pkg/items"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -37,7 +39,13 @@ var serveApiCmd = &cobra.Command{
 			resp := forms.BasicResponse{}
 			resp.Success = false
 			resp.Message = ""
+
+			if err == echo.ErrUnauthorized {
+				respCode = http.StatusUnauthorized
+			}
+
 			if !c.Response().Committed {
+
 				if c.Request().Method == http.MethodHead {
 					err = c.NoContent(respCode)
 				} else {
@@ -132,10 +140,22 @@ var serveApiCmd = &cobra.Command{
 
 		e.POST("/login", handlers.Login)
 		e.POST("/register", handlers.Register)
-		e.GET("/users", handlers.UsersList)
+		e.GET("/users", handlers.UsersList, AdminMiddleWare)
 
 		e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 	},
+}
+
+func AdminMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cc := c.(*common.CustomContext)
+
+		if !strings.EqualFold(cc.User.Role, items.AdminRole) {
+			return echo.ErrUnauthorized
+		}
+
+		return next(c)
+	}
 }
 
 func init() {

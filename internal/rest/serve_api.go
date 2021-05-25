@@ -143,6 +143,7 @@ var serveApiCmd = &cobra.Command{
 		e.GET("/users", handlers.UsersList, AdminMiddleWare)
 		e.GET("/users/:user-id", handlers.UsersDetails, AdminMiddleWare)
 		e.PUT("/users/:user-id", handlers.ChangeRole, AdminMiddleWare)
+		e.GET("/users/me", handlers.UsersProfile, UserMiddleWare)
 
 		e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 	},
@@ -153,6 +154,18 @@ func AdminMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
 		cc := c.(*common.CustomContext)
 
 		if !strings.EqualFold(cc.User.Role, items.AdminRole) {
+			return echo.ErrUnauthorized
+		}
+
+		return next(c)
+	}
+}
+
+func UserMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cc := c.(*common.CustomContext)
+
+		if !strings.EqualFold(cc.User.Role, items.UserRole) {
 			return echo.ErrUnauthorized
 		}
 

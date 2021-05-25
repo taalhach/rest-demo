@@ -29,7 +29,7 @@ secret_key = "RANDOMKEYGOESHERE"
 put this line into ~/.bashrc file
 
 ```
-export REST_TASK_SETTINGS=path/to/config/reset_task.ini 
+export REST_TASK_SETTINGS=path/to/config/rest_task.ini 
 ```
 
 **change** ``path/to/config/`` with your config path.

@@ -33,7 +33,7 @@ var serveApiCmd = &cobra.Command{
 		e := echo.New()
 
 		// error handler
-		e.HTTPErrorHandler = CustomErrorHandler
+		e.HTTPErrorHandler = customErrHandler
 
 		// log request uri, status etc.
 		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{

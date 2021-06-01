@@ -1,0 +1,30 @@
+version: "3.4"
+
+services:
+  db:
+    image: postgres:12.7-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+    - 5432:5432
+
+  restserver:
+    image: restserver
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8081:8081
+    depends_on:
+      - db
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./contrib/migrations:/migrations
+    command: [ "-path", "/migrations", "-database",  "postgres://root:postgres@postgres_db:5432/postgres?sslmode=disable", "up"]
+    links:
+      - db

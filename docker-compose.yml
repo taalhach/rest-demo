@@ -25,6 +25,6 @@ services:
     image: migrate/migrate
     volumes:
       - ./contrib/migrations:/migrations
-    command: [ "-path", "/migrations", "-database",  "postgres://root:postgres@postgres_db:5432/postgres?sslmode=disable", "up"]
+    command: [ "-path", "/migrations", "-database",  "postgres://postgres:postgres@postgres_db:5432/postgres?sslmode=disable", "up"]
     links:
       - db
